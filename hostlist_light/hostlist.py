@@ -2,7 +2,9 @@
 
 import re
 
+
 class BadHostlist(Exception):
+    """Host list parameter format not accepted or mistaken."""
     pass
 
 
@@ -22,15 +24,15 @@ def expand_hostlist(hostlist, allow_duplicates=False, sort=False):
             part = ""
         else:
             part += c
-
+        # Check for brackets
         if c == "[":
             bracket_level += 1
         elif c == "]":
             bracket_level -= 1
-
+        # Validate format
         if bracket_level > 1:
             raise BadHostlist("nested brackets")
-        elif bracket_level < 0:
+        if bracket_level < 0:
             raise BadHostlist("unbalanced brackets")
 
     if bracket_level > 0:
@@ -117,32 +119,25 @@ def collect_hostlist(hosts, silently_discard_bad=False):
     cleaned = []
     for host in hosts:
         host = host.strip()
-        if not host:
-            continue
-        
-        # Check for forbidden characters
-        if '[' in host or ']' in host:
-            if silently_discard_bad:
-                continue
+        if host:
+            # Check for forbidden characters
+            if '[' in host or ']' in host:
+                if not silently_discard_bad:
+                    raise BadHostlist("forbidden characters")
             else:
-                raise BadHostlist("forbidden characters")
-        
-        cleaned.append(host)
+                cleaned.append(host)
     
     # Remove duplicates and sort
     cleaned = remove_duplicates(cleaned)
     cleaned = sorted(cleaned, key=numeric_sort_key)
-    
     if not cleaned:
         return ""
     
     # Each entry is (unprocessed_left, processed_right)
     left_right = [(host, "") for host in cleaned]
-
     looping = True
     while looping:
         left_right, looping = collect_hostlist_1(left_right)
-
     return ",".join(right for _, right in left_right)
 
 
@@ -180,7 +175,6 @@ def collect_hostlist_1(left_right):
         else:
             new_right = "[" + range_str + "]" + suffix
         left_right.append((prefix, new_right))
-
     return left_right, any(left for left, _ in left_right)
 
 
