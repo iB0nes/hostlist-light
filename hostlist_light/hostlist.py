@@ -91,7 +91,7 @@ def expand_range(prefix, numeric_range):
 
     if high < low:
         raise BadHostlist("start > stop")
-    elif high - low > MAX_SIZE:
+    if high - low > MAX_SIZE:
         raise BadHostlist("range too large")
 
     results = []
@@ -180,8 +180,7 @@ def format_range(low, high, width):
     """Format inclusive numeric range using fixed width."""
     if low == high:
         return f"{low:0{width}d}"
-    else:
-        return f"{low:0{width}d}-{high:0{width}d}"
+    return f"{low:0{width}d}-{high:0{width}d}"
 
 
 def numerically_sorted(l):
