@@ -1,11 +1,9 @@
 """Lightweight implementation of hostlist API."""
-
 import re
 
 
 class BadHostlist(Exception):
     """Host list parameter format not accepted or mistaken."""
-    pass
 
 
 MAX_SIZE = 100000
@@ -80,7 +78,7 @@ def expand_range(prefix, numeric_range):
     """Expand one numeric range token with prefix."""
     m = re.match(r'^[0-9]+$', numeric_range)
     if m:
-        return ["%s%s" % (prefix, numeric_range)]
+        return [f"{prefix}{numeric_range}"]
 
     m = re.match(r'^([0-9]+)-([0-9]+)$', numeric_range)
     if not m:
@@ -98,7 +96,7 @@ def expand_range(prefix, numeric_range):
 
     results = []
     for i in range(low, high + 1):
-        results.append("%s%0*d" % (prefix, width, i))
+        results.append(f"{prefix}{i:0{width}d}")
     return results
 
 
@@ -126,13 +124,13 @@ def collect_hostlist(hosts, silently_discard_bad=False):
                     raise BadHostlist("forbidden characters")
             else:
                 cleaned.append(host)
-    
+
     # Remove duplicates and sort
     cleaned = remove_duplicates(cleaned)
     cleaned = sorted(cleaned, key=numeric_sort_key)
     if not cleaned:
         return ""
-    
+
     # Each entry is (unprocessed_left, processed_right)
     left_right = [(host, "") for host in cleaned]
     looping = True
@@ -181,9 +179,9 @@ def collect_hostlist_1(left_right):
 def format_range(low, high, width):
     """Format inclusive numeric range using fixed width."""
     if low == high:
-        return "%0*d" % (width, low)
+        return f"{low:0{width}d}"
     else:
-        return "%0*d-%0*d" % (width, low, width, high)
+        return f"{low:0{width}d}-{high:0{width}d}"
 
 
 def numerically_sorted(l):
