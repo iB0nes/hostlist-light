@@ -142,9 +142,10 @@ def collect_hostlist(hosts, silently_discard_bad=False):
 def collect_hostlist_1(left_right):
     """Peel the rightmost number off each left part and merge entries that
     differ only in that number. Returns (new_left_right, needs_another_pass)."""
+    regex = re.compile(r'^(.*?)([0-9]+)([^0-9]*)$')
     groups = {}
     for left, right in left_right:
-        m = re.match(r'^(.*?)([0-9]+)([^0-9]*)$', left)
+        m = regex.match(left)
         if not m:
             groups.setdefault((None, left + right, 0), []).append(None)
             continue
